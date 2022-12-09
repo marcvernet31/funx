@@ -44,6 +44,11 @@ class FunxVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by FunxParser#Comment.
+    def visitComment(self, ctx:FunxParser.CommentContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by FunxParser#Variable.
     def visitVariable(self, ctx:FunxParser.VariableContext):
         return self.visitChildren(ctx)

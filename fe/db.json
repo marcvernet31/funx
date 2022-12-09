@@ -1,1 +1,1 @@
-{"_default": {"1": {"name": "Suma"}, "2": {"name": "hola"}, "3": {"name": "heey"}, "4": {"name": "oleee"}, "5": {"name": "braaavo"}, "6": {"name": "braaavo"}, "7": {"name": "braaavo"}, "8": {"name": "hey"}, "9": {"name": "127.0.0.1 - - [04/Dec/2022 12:02:45] \"GET / HTTP/1.1\" 200 -"}}}
+{"_default": {"1": {"name": "Suma", "variables": ["x", "y"]}, "2": {"name": "DOS", "variables": ["x"]}, "3": {"name": "Fun", "variables": ["x", "y", "z"]}}}

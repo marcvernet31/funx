@@ -22,7 +22,8 @@ RES=21
 DIGIT=22
 ALPHA=23
 ASS=24
-WS=25
+COMMENT=25
+WS=26
 '='=1
 '!='=2
 '<'=3

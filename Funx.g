@@ -18,6 +18,7 @@ evalFuncio :  NOM_FUN (expr)*                                   # EvFuncio
 
 expr 
      : '(' expr ')'                 # ParentExpr
+     | COMMENT                      # Comment 
      | expr MUL expr                # Multiplicacio
      | expr DIV expr                # Divisio
      | <assoc=right> expr POT expr  # Potencia
@@ -45,7 +46,7 @@ RES : '-' ;
 DIGIT: [0-9];
 ALPHA: [a-zA-Z_];
 ASS : '<-' ;
-
+COMMENT : '#' ~[\r\n]*;
 
 
 WS  : [ \n]+ -> skip ;

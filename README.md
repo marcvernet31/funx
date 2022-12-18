@@ -42,9 +42,18 @@ Mul 3 3  # 9
 
 Els blocs d'expressions (delimitats per `{}`) poden contenir multiples expressions en tots elc casos (funcions, `while`, `if` i `else`). El bloc retorna com a resultat el valor de l'evaluació l'última expressió.
 
+L'intèrpret de Funx és capaç de detectar els seguents errors
+	- Divisió per zero
+    - Nom repetit de variable en la declaració d'una funció 
+    - La funció cridada no existeix
+    - Nombre de variables incorrecte en la crida d'una funció
+
+
 ## La interfície
 La interfície web es la eina que permet a l'usuari executar comandes de Funx. Esta construida en Python utilitzant el framework Flask. També té alguns detalls afegits amb la llibreria de css [Bulma](https://bulma.io/), per fer-ne l'estètica una mica més atractiva. 
- [FOTO]
+
+![Captura de pantalla de l'interfície](file:///ui.jpg)
+
 La part principal és la Consola, on l'usuari pot introduir comandes individuals de Funx i executar-les amb un click.  Un cop executat, tant la comanda com el seu resultat es mostren a l'esquerra. Totes les funcions declarades es mostren a l'apartat de Funcions.
  
 Les funcions declarades que ja existien es sobreescriuen.
@@ -58,7 +67,6 @@ Com a funcionalitat extra, hi ha un botó "Clear" que serveix per esborrar l'his
 $> antlr4 -Dlanguage=Python3 -no-listener -visitor Funx.g
 
 # Iniciar l'aplicació Flask
-$> flask --app main run
+$> flask --app base run
 ```
 Un cop iniciada l'aplicació Flask, es pot accedir a `http://localhost:5000/`.
-

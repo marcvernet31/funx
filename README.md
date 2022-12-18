@@ -52,7 +52,7 @@ L'intèrpret de Funx és capaç de detectar els seguents errors
 ## La interfície
 La interfície web es la eina que permet a l'usuari executar comandes de Funx. Esta construida en Python utilitzant el framework Flask. També té alguns detalls afegits amb la llibreria de css [Bulma](https://bulma.io/), per fer-ne l'estètica una mica més atractiva. 
 
-![Captura de pantalla de l'interfície](file:///ui.png)
+![Captura de pantalla de l'interfície](ui.png)
 
 La part principal és la Consola, on l'usuari pot introduir comandes individuals de Funx i executar-les amb un click.  Un cop executat, tant la comanda com el seu resultat es mostren a l'esquerra. Totes les funcions declarades es mostren a l'apartat de Funcions.
  

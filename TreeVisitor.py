@@ -5,6 +5,10 @@ else:
     from FunxParser import FunxParser
     from FunxVisitor import FunxVisitor
 
+# Emmagatzema un log d'errors per a cada execució
+global errors
+errors = []
+
 # Emmagatzema les variables declarades i el seu valor
 global variables
 variables = {}
@@ -12,6 +16,15 @@ variables = {}
 # Emmagatzema les funcions declarades
 global funcions
 funcions = {}
+
+# Possibles errors
+possibleErrors = [
+    "Error: Divisió per zero", 
+    "Error: Nom repetit de variable", 
+    "Error: La funció cridada no existeix",
+    "Error: Nombre de variables incorrecte"
+]
+
 
 class Funcio():
     def __init__(self, nom, expr, variables):
@@ -30,83 +43,64 @@ class TreeVisitor(FunxVisitor):
 
     def visitRoot(self, ctx):
         l = list(ctx.getChildren())
-        return(self.visit(l[0]))
+        output = self.visit(l[0])
 
+        global errors
+        if len(errors) != 0: 
+            output = errors[0]
+            errors = []
+        return output
+  
     def visitParentExpr(self, ctx):
         l = list(ctx.getChildren())        
         return self.visit(l[1])
 
-    ##### ASSIGNACIO #####
-    # x <- 1
+    def visitValor(self, ctx):
+        l = list(ctx.getChildren())
+        return int(l[0].getText())
+
     def visitAssignacio(self, ctx):
         l = list(ctx.getChildren())
-        variables[l[0].getText()] = self.visit(l[2])
-
-    ##### IGUALTATS #####
-    # x = 1
-    # x = y
-    def visitIgualtatInput(self, ctx):
-        l = list(ctx.getChildren())
-        return(self.visit(l[0]))
+        valor = self.visit(l[2])
+        # Evitar assignar None en cas de divisió per zero
+        if valor == None: valor = 0
+        variables[l[0].getText()] = valor
     
+    def visitVariable(self, ctx):
+        l = list(ctx.getChildren())
+        if l[0].getText() in variables: return variables[l[0].getText()]
+        else: return 0
+
     def visitIgualtat(self, ctx):
         l = list(ctx.getChildren())
 
-        # Extreu valor de l'esquerra
-        valor_1 = 0
-        if l[0].getText() in variables: valor_1 = variables[l[0].getText()]
+        valor_1 = self.visit(l[0])
+        sym = l[1].getText()
+        valor_2 = self.visit(l[2])
 
-        # Extreu valor de la dreta
-        valor_2 = 0
-        if FunxParser.symbolicNames[l[2].getSymbol().type] == 'NUM': valor_2 = int(l[2].getText())
-        elif l[2].getText() in variables: valor_2 = variables[l[2].getText()]
-        
-        # Calcula la igualtat
-        if l[1].getText() == '=': return int(valor_1 == valor_2)
-        if l[1].getText() == '!=': return int(valor_1 != valor_2)
-        if l[1].getText() == '<': return int(valor_1 < valor_2)
-        if l[1].getText() == '>': return int(valor_1 > valor_2)
-        if l[1].getText() == '<=': return int(valor_1 <= valor_2)
-        if l[1].getText() == '>=': return int(valor_1 >= valor_2)
-
-
-    ##### CONDICIONAL #####
-    # if x=0 {expr} else {expr}
-    def visitCondicionalInput(self, ctx):
-        l = list(ctx.getChildren())
-        return(self.visit(l[0]))
+        if sym == '=':  return int(valor_1 == valor_2)
+        if sym == '!=': return int(valor_1 != valor_2)
+        if sym == '<':  return int(valor_1 < valor_2)
+        if sym == '>':  return int(valor_1 > valor_2)
+        if sym == '<=': return int(valor_1 <= valor_2)
+        if sym == '>=': return int(valor_1 >= valor_2)
 
     def visitCondicional(self, ctx):
         l = list(ctx.getChildren())
         condicio = self.visit(l[1])
-
-        if condicio: self.visit(l[3])
+        if condicio == 1: return self.visit(l[3])
         # Executa en cas de condició falsa i expressió a else
-        elif len(l) > 5: self.visit(l[7])
-
-
-    ##### WHILE #####
-    # while x=0 {expr}
-    def visitIteracioInput(self, ctx):
-        l = list(ctx.getChildren())
-        return(self.visit(l[0]))
+        elif len(l) > 5: return self.visit(l[7])
 
     def visitIteracio(self, ctx):
         l = list(ctx.getChildren())
-        cond = self.visit(l[1])
-        while cond:
+        condicio = self.visit(l[1])
+
+        while condicio == 1:
             # executa totes les expressions del bloc
             for i in range(3, len(l)-1): self.visit(l[3])
-            # actualitza el valor de la condició a cada iteració
-            cond = self.visit(l[1]) 
-
-
-    ##### FUNCIONS #####
-    # Suma x y {expr}
-    def visitDecFuncioInput(self, ctx):
-        l = list(ctx.getChildren())
-        return(self.visit(l[0]))
-
+            # actualitza el valor de la condició 
+            condicio = self.visit(l[1]) 
 
     def visitDecFuncio(self, ctx):
         l = list(ctx.getChildren())
@@ -125,15 +119,14 @@ class TreeVisitor(FunxVisitor):
             expressions += [l[i]]  
             i += 1
 
+        # Comprova si hi ha variables repetides
+        if len(variablesInput) != len(set(variablesInput)):
+            errors.append(possibleErrors[1])
+            return None
+
         # Emmagatzema la funció 
         funcions[nom] = Funcio(nom, expressions, variablesInput)
-        # Format de l'output {"name": "Suma", "variables": ["x", "y"]}
-        return({'name': nom, 'variables': variablesInput})
-
-
-    def visitEvFuncioInput(self, ctx):
-        l = list(ctx.getChildren())
-        return(self.visit(l[0]))
+        return f"Funció declarada: {nom} {' '.join(variablesInput)}"
 
     def visitEvFuncio(self, ctx):
         l = list(ctx.getChildren())
@@ -145,11 +138,10 @@ class TreeVisitor(FunxVisitor):
 
         if nom in funcions:
             funcio = funcions[nom]
-            if len(funcio.variables) != len(valors): print('Error, variables incorrectes')
+            if len(funcio.variables) != len(valors): errors.append(possibleErrors[3])
             else:
                 # Guarda les variables globals per recuperar despres.
-                # Afegeix les variables locals al registre de variables global 
-                # per ser utilitzades
+                # Afegeix les variables locals al registre de variables global per ser utilitzades
                 global variables
                 variables_originals = variables
                 variables_locals = {}
@@ -158,50 +150,44 @@ class TreeVisitor(FunxVisitor):
                 
                 # Executa les expressions i emmagatzema l'output
                 output = 0
-                for expr in funcio.expr: output = self.visit(expr)
+                for expr in funcio.expr: 
+                    output = self.visit(expr)
+                    if output != None: 
+                        variables = variables_originals
+                        return output
                
                 # Retorna les variables global
                 variables = variables_originals
                 return output
-
         else:
-            print('Error, funció no trobada')
-
-
-    ##### OPERACIONS #####
+            errors.append(possibleErrors[2])
 
     def visitMultiplicacio(self, ctx):
         l = list(ctx.getChildren())
-        return(self.visit(l[0]) * self.visit(l[2]))
+        try: return(self.visit(l[0]) * self.visit(l[2]))
+        except: None
 
     def visitDivisio(self, ctx):
         l = list(ctx.getChildren())
         num = self.visit(l[0])
         den = self.visit(l[2])
-        if den == 0: return('Error')
-        else:
+        try:
             return(num // den)
+        except: 
+            errors.append(possibleErrors[0])
+            return None
 
     def visitPotencia(self, ctx):
-        l = list(ctx.getChildren())
-        return(self.visit(l[0]) ** self.visit(l[2]))
+        l = list(ctx.getChildren()) 
+        try: return(self.visit(l[0]) ** self.visit(l[2]))
+        except: None
 
     def visitSuma(self, ctx):
         l = list(ctx.getChildren())
-        return(self.visit(l[0]) + self.visit(l[2]))
+        try: return(self.visit(l[0]) + self.visit(l[2]))
+        except: None
 
     def visitResta(self, ctx):
         l = list(ctx.getChildren())
-        return(self.visit(l[0]) - self.visit(l[2]))
-
-
-    ##### VALORS I VARIABLES #####
-
-    def visitValor(self, ctx):
-        l = list(ctx.getChildren())
-        return int(l[0].getText())
-
-    def visitVariable(self, ctx):
-        l = list(ctx.getChildren())
-        if l[0].getText() in variables: return variables[l[0].getText()]
-        else: return 0
+        try: return(self.visit(l[0]) - self.visit(l[2]))
+        except: None

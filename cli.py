@@ -12,4 +12,4 @@ while True:
 
     tree = parser.root() 
     visitor = TreeVisitor()
-    visitor.visit(tree)
+    print("Out: ", visitor.visit(tree))

@@ -68,5 +68,10 @@ $> antlr4 -Dlanguage=Python3 -no-listener -visitor Funx.g
 
 # Iniciar l'aplicació Flask
 $> flask --app base run
+
+# També hi ha la opció d'accedir a l'intèrpret a través de la
+# linia de comandes, sense utilitzar la interfície
+$> python3 cli
+
 ```
 Un cop iniciada l'aplicació Flask, es pot accedir a `http://localhost:5000/`.
